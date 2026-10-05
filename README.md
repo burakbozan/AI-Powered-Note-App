@@ -1,36 +1,37 @@
 # AI-Powered Note App
 
-A productivity app for creating and managing notes, enhanced with AI summarization and smart tagging.
+A note-taking app with Markdown editing, account-based note storage, client-side search, and optional AI-generated summaries and tags.
 
-## 🚀 Features
+## Features
 
-- Create, edit, delete notes
-- AI-powered summarization & tagging
-- Semantic search with embeddings
-- Markdown support
-- User authentication
-- Collaborative notes (future)
+- Register and sign in with JWT authentication.
+- Create, edit, list, and delete notes stored in PostgreSQL.
+- Write Markdown with a formatting toolbar and switch to rendered preview.
+- Search loaded notes by title, content, summary, or tag; filter by AI insight status and tag.
+- Generate and save a note summary and up to eight tags using the OpenAI API.
 
-## Tech Stack
+Semantic search, collaboration, and offline sync are planned; they are not implemented in the current version.
 
-- Frontend: React + TailwindCSS (planned)
-- Backend: Node.js + Express
-- Database: PostgreSQL with Sequelize
-- Authentication: JWT
-- AI Integration: OpenAI API
+## Stack
+
+- Frontend: React 18, Vite, React Router, Tailwind CSS, and `@uiw/react-md-editor`.
+- Backend: Node.js 20+, Express, and Sequelize 6.
+- Database: PostgreSQL.
+- Authentication: bcrypt password hashing and signed JWT bearer tokens.
+- AI: OpenAI Chat Completions API; the API key stays on the backend.
 
 ## Project Structure
 
 ```text
 frontend/
   src/
-    components/   Auth, navigation, note list, and editor UI
-    hooks/        Authentication and notes state
+    components/   Auth form, sidebar, note list, Markdown editor
+    hooks/        Authentication context and notes state
     pages/        Notes dashboard
-    services/     Backend API clients
+    services/     Auth and note API clients
 backend/
   src/
-    config/       PostgreSQL connection
+    config/       Sequelize/PostgreSQL connection
     controllers/  Auth and note request handlers
     middleware/   JWT authentication and error handling
     models/       Sequelize User and Note models
@@ -38,32 +39,41 @@ backend/
     services/     OpenAI summarization and tagging
 ```
 
-## Getting Started
+## Local Development
 
-1. Install Node.js 20+ and PostgreSQL, then create a database named `ai_notes`.
-2. In `backend/`, copy `.env.example` to `.env` and set `DATABASE_URL`, a long random `JWT_SECRET`, and `OPENAI_API_KEY` to enable AI summaries.
-3. Run `npm install` in `backend/`, then start the API with `npm run dev`. It listens on `http://localhost:4000`.
-4. In another terminal, copy `frontend/.env.example` to `frontend/.env`, run `npm install` in `frontend/`, then start the client with `npm run dev`. Vite serves it at `http://localhost:5173`.
+Prerequisites: Node.js 20 or newer and a running PostgreSQL server. Create a database named `ai_notes`.
 
-The API syncs its Sequelize models on startup. For production deployments, use migrations rather than relying on automatic schema changes.
+1. Copy `backend/.env.example` to `backend/.env`.
+2. Set `DATABASE_URL` to your PostgreSQL connection string and replace `JWT_SECRET` with a long random value. Set `CLIENT_ORIGIN=http://localhost:5173` to match Vite's default origin. Set `OPENAI_API_KEY` to enable summaries and tagging; other app features work without it.
+3. In `backend/`, run `npm install`, then `npm run dev`. The API listens on `http://localhost:4000`.
+4. Copy `frontend/.env.example` to `frontend/.env`. In `frontend/`, run `npm install`, then `npm run dev`. Vite serves the app at `http://localhost:5173`.
+
+The backend exposes `GET /health`. During development it creates missing Sequelize tables on startup with `sequelize.sync()`. Use migrations and review schema changes explicitly in production; do not rely on startup sync as a migration strategy.
 
 ## API
 
-All note routes require `Authorization: Bearer <token>`.
+All note endpoints require `Authorization: Bearer <token>`. Registration requires a valid email and a password of at least eight characters. Notes are scoped to the authenticated user.
 
 | Method | Path | Description |
 | --- | --- | --- |
-| `POST` | `/api/v1/auth/register` | Create an account (`email`, `password`) |
-| `POST` | `/api/v1/auth/login` | Sign in and receive a JWT |
-| `POST` | `/api/v1/notes` | Create a note (`title`, optional `content`) |
-| `GET` | `/api/v1/notes` | List the signed-in user's notes |
-| `PUT` | `/api/v1/notes/:id` | Update a note's `title` and/or `content` |
-| `DELETE` | `/api/v1/notes/:id` | Delete a note |
-| `POST` | `/api/v1/notes/:id/summarize` | Generate and save summary and tags |
+| `POST` | `/api/v1/auth/register` | Create an account; body: `{ "email", "password" }` |
+| `POST` | `/api/v1/auth/login` | Sign in; returns `{ "user", "token" }` |
+| `POST` | `/api/v1/notes` | Create a note; body: `{ "title", "content?" }` |
+| `GET` | `/api/v1/notes` | List the authenticated user's notes |
+| `PUT` | `/api/v1/notes/:id` | Update `title` and/or `content` |
+| `DELETE` | `/api/v1/notes/:id` | Delete a note; returns `204` on success |
+| `POST` | `/api/v1/notes/:id/summarize` | Generate and persist `summary` and `tags` |
 
-## 📌 Roadmap
+The summarize endpoint returns `503` when `OPENAI_API_KEY` is not configured. The AI service currently provides summaries and tags only; it does not generate embeddings.
 
-- [ ] Collaborative editing
-- [ ] Offline mode
-- [ ] Mobile app version
-- [ ] CI/CD pipeline
+## Checks
+
+- Backend syntax check: run `npm run check` in `backend/`.
+- Frontend production build: run `npm run build` in `frontend/`.
+
+## Roadmap
+
+- Semantic search with stored embeddings.
+- Collaborative editing.
+- Offline mode and sync.
+- Mobile client and CI/CD pipeline.
