@@ -1,0 +1,30 @@
+{
+  "name": "ai-powered-note-app-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Express API for the AI-powered note app",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/app.js && node --check src/config/database.js && node --check src/controllers/authController.js && node --check src/controllers/noteController.js && node --check src/middleware/authenticate.js && node --check src/middleware/errorHandler.js && node --check src/models/index.js && node --check src/routes/authRoutes.js && node --check src/routes/noteRoutes.js && node --check src/services/aiService.js && node --check src/utils/asyncHandler.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "openai": "^4.77.0",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
